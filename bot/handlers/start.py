@@ -5,6 +5,7 @@ from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
+from bot.handlers.random_fact import _send_random_fact
 from bot.keyboards.common import main_menu_keyboard
 from bot.keyboards.quiz import quiz_topics_keyboard
 from bot.keyboards.recommendations import recommendations_categories_keyboard
@@ -54,7 +55,7 @@ async def menu_hint_handler(
     action = (callback.data or "").split(":", 1)[-1]
     if callback.message:
         if action == "random":
-            await callback.message.answer("Открой режим командой /random")
+            await _send_random_fact(callback.message)
         elif action == "gpt":
             await state.set_state(GptStates.waiting_text)
             await callback.message.answer(
@@ -90,5 +91,5 @@ async def menu_hint_handler(
                 reply_markup=categories_kb,
             )
         else:
-            await callback.message.answer("Меню не найдено. Используй /start")
+            await callback.message.answer("Рукожоп, Используй /start")
     await callback.answer()

@@ -57,14 +57,18 @@ async def talk_choose_persona_handler(
     """Save selected persona and switch to talking state."""
     persona_id = (callback.data or "").split(":")[-1]
     persona = resolve_persona(persona_id)
+    persona_prompt = persona.get("prompt", "Ты дружелюбный ассистент.")
+    persona_title = persona.get("title", "Ассистент")
+
     await state.update_data(
         persona_id=persona_id,
-        persona_prompt=persona.system_prompt,
+        persona_prompt=persona_prompt,
     )
     await state.set_state(TalkStates.talking)
     if callback.message:
         await callback.message.answer(
-            f"Персона выбрана: {persona.display_name}. Напиши сообщение.")
+            f"Персона выбрана: {persona_title}. Напиши сообщение."
+        )
     await callback.answer()
 
 
