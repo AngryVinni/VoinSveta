@@ -13,5 +13,25 @@ def translator_languages_keyboard(languages: dict[str, str]) -> InlineKeyboardMa
 				callback_data=f"translator:lang:{language_id}",
 			),
 		])
+	rows.append([
+		InlineKeyboardButton(
+			text="В главное меню",
+			callback_data="common:finish",
+		),
+	])
 
 	return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def translator_post_translation_keyboard() -> InlineKeyboardMarkup:
+	"""Actions after translation response."""
+	return InlineKeyboardMarkup(
+		inline_keyboard=[
+			[
+				InlineKeyboardButton(
+					text="В главное меню",
+					callback_data="common:finish",
+				),
+			],
+		],
+	)

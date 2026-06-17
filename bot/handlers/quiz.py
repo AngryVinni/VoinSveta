@@ -21,6 +21,11 @@ from config import load_settings
 router = Router(name=__name__)
 
 
+def _normalize_question_text(question: str) -> str:
+    """Normalize question text for stable duplicate checks."""
+    return " ".join((question or "").casefold().split())
+
+
 def _get_client() -> OpenAIClient | None:
     try:
         return OpenAIClient(load_settings())
@@ -32,6 +37,13 @@ async def _generate_next_question(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     topic_id = data.get("quiz_topic_id")
     topic_label = data.get("quiz_topic_label", topic_id)
+    asked_questions_raw = data.get("quiz_asked_questions", [])
+    asked_questions = [
+        str(item) for item in asked_questions_raw if isinstance(item, str)
+    ]
+    asked_questions_norm = {
+        _normalize_question_text(item) for item in asked_questions
+    }
     if not topic_id:
         await message.answer("Сначала выбери тему викторины.")
         return
@@ -41,15 +53,35 @@ async def _generate_next_question(message: Message, state: FSMContext) -> None:
         await message.answer("OpenAI сейчас не настроен.")
         return
 
-    raw = await client.ask_safe(
-        system_prompt="Ты генератор викторин.",
-        user_prompt=quiz_question_prompt(topic_label),
-        temperature=0.8,
-    )
-    question = parse_question_response(raw)
+    question = None
+    for _ in range(3):
+        raw = await client.ask_safe(
+            system_prompt="Ты генератор викторин.",
+            user_prompt=quiz_question_prompt(
+                topic_label,
+                recent_questions=asked_questions[-8:],
+            ),
+            temperature=0.8,
+        )
+        candidate = parse_question_response(raw)
+        if (
+            _normalize_question_text(candidate.question)
+            not in asked_questions_norm
+        ):
+            question = candidate
+            break
+
+    if not question:
+        await message.answer(
+            "Не удалось сгенерировать новый вопрос без повторов. "
+            "Попробуй другую тему."
+        )
+        return
+
     await state.update_data(
         quiz_question=question.question,
         quiz_expected_answer=question.expected_answer,
+        quiz_asked_questions=[*asked_questions, question.question],
     )
     await message.answer(
         f"Вопрос по теме '{topic_label}':\n{question.question}"
@@ -60,7 +92,11 @@ async def _generate_next_question(message: Message, state: FSMContext) -> None:
 async def quiz_start_handler(message: Message, state: FSMContext) -> None:
     """Start quiz topic selection."""
     await state.set_state(QuizStates.choosing_topic)
-    await state.update_data(quiz_correct=0, quiz_total=0)
+    await state.update_data(
+        quiz_correct=0,
+        quiz_total=0,
+        quiz_asked_questions=[],
+    )
     await message.answer(
         "Выбери тему викторины:",
         reply_markup=quiz_topics_keyboard(available_topics()),
@@ -73,7 +109,11 @@ async def quiz_from_menu_handler(
 ) -> None:
     """Open quiz flow from menu."""
     await state.set_state(QuizStates.choosing_topic)
-    await state.update_data(quiz_correct=0, quiz_total=0)
+    await state.update_data(
+        quiz_correct=0,
+        quiz_total=0,
+        quiz_asked_questions=[],
+    )
     if callback.message:
         await callback.message.answer(
             "Выбери тему викторины:",
@@ -100,6 +140,7 @@ async def quiz_topic_handler(
     await state.update_data(
         quiz_topic_id=topic_id,
         quiz_topic_label=topics[topic_id],
+        quiz_asked_questions=[],
     )
     await state.set_state(QuizStates.answering)
 

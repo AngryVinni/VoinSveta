@@ -13,7 +13,7 @@ def talk_persona_keyboard() -> InlineKeyboardMarkup:
 			],
 			[
 				InlineKeyboardButton(text="🎨 Фрида", callback_data="talk:persona:frida"),
-				InlineKeyboardButton(text="✅ Закончить", callback_data="common:finish"),
+				InlineKeyboardButton(text="Главное меню", callback_data="common:finish"),
 			],
 		],
 	)

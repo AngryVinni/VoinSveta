@@ -36,8 +36,8 @@ def recommendations_actions_keyboard() -> InlineKeyboardMarkup:
 	return InlineKeyboardMarkup(
 		inline_keyboard=[
 			[
-				InlineKeyboardButton(text="👎 Не нравится", callback_data="recommend:dislike"),
-				InlineKeyboardButton(text="✅ Закончить", callback_data="common:finish"),
+				InlineKeyboardButton(text="Не нравится", callback_data="recommend:dislike"),
+				InlineKeyboardButton(text="Главное меню", callback_data="common:finish"),
 			],
 		],
 	)

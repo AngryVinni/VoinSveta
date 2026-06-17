@@ -14,15 +14,33 @@ def gpt_chat_system_prompt() -> str:
 	return "Ты дружелюбный AI-помощник. Отвечай понятно и коротко."
 
 
-def quiz_question_prompt(topic: str) -> str:
-	"""Prompt for one quiz question."""
-	return (
-		f"Сгенерируй один вопрос викторины по теме '{topic}'. "
+def quiz_question_prompt(
+	topic: str,
+	recent_questions: list[str] | None = None,
+) -> str:
+	"""Prompt for one quiz question, optionally excluding recent questions."""
+	base = (
+		f"Сгенерируй один новый вопрос викторины по теме '{topic}'. "
 		"Формат строго: QUESTION: <вопрос>\\nANSWER: <краткий ответ>."
 	)
 
+	if not recent_questions:
+		return base
 
-def quiz_check_prompt(topic: str, question: str, expected_answer: str, user_answer: str) -> str:
+	recent = "\n".join(f"- {question}" for question in recent_questions)
+	return (
+		f"{base}\n"
+		"Не повторяй дословно вопросы из списка ниже:\n"
+		f"{recent}"
+	)
+
+
+def quiz_check_prompt(
+	topic: str,
+	question: str,
+	expected_answer: str,
+	user_answer: str,
+) -> str:
 	"""Prompt for quiz answer validation."""
 	return (
 		f"Тема: {topic}. Вопрос: {question}. Эталонный ответ: {expected_answer}. "

@@ -20,5 +20,8 @@ def quiz_post_answer_keyboard() -> InlineKeyboardMarkup:
 				InlineKeyboardButton(text="Следующий вопрос", callback_data="quiz:next"),
 				InlineKeyboardButton(text="Сменить тему", callback_data="quiz:change_topic"),
 			],
+			[
+				InlineKeyboardButton(text="В главное меню", callback_data="common:finish"),
+			],
 		],
 	)

@@ -5,7 +5,10 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
-from bot.keyboards.translator import translator_languages_keyboard
+from bot.keyboards.translator import (
+    translator_languages_keyboard,
+    translator_post_translation_keyboard,
+)
 from bot.services.openai_client import OpenAIClient
 from bot.services.prompt_factory import translation_prompt
 from bot.services.translation_engine import list_languages, resolve_language
@@ -94,4 +97,7 @@ async def translator_text_handler(message: Message, state: FSMContext) -> None:
         user_prompt=translation_prompt(target_language, text),
         temperature=0.2,
     )
-    await message.answer(translated)
+    await message.answer(
+        translated,
+        reply_markup=translator_post_translation_keyboard(),
+    )

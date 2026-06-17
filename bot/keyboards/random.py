@@ -9,7 +9,8 @@ def random_action_keyboard() -> InlineKeyboardMarkup:
 		inline_keyboard=[
 			[
 				InlineKeyboardButton(text="Хочу еще факт", callback_data="random:more"),
-				InlineKeyboardButton(text="Закончить", callback_data="common:finish"),
+				InlineKeyboardButton(text="Главное меню", callback_data="common:finish"),
 			],
+			
 		],
 	)
